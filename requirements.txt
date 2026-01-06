@@ -1,0 +1,7 @@
+Django==5.2.6
+djangorestframework==3.16.1
+djangorestframework-simplejwt==5.5.1
+PyJWT==2.10.1
+django-filter==24.3
+weasyprint==60.2
+reportlab==4.0.8
