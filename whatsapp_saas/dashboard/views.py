@@ -6,7 +6,9 @@ from .serializer import *
 from .models import *
 from rest_framework.permissions import IsAuthenticated,AllowAny
 from django_filters.rest_framework import DjangoFilterBackend
-from .emails import send_summary_via_email
+from .emails import *
+from django.utils.timezone import now as date
+from datetime import timedelta
 
 
 
@@ -111,62 +113,73 @@ class SummaryAPI(APIView):
                 "message": "Internal server error",
                 "data": str(e)
             })
-        
-class SummaryEmail(APIView):
-    permission_classes = [AllowAny]
-    def get(self, request, business_id):
-        try:
-            business_emails = list(Business.objects.filter(
+
+
+class SendSummary(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, business_id):
+        business_emails = list(
+            Business.objects.filter(
                 id=business_id,
                 owner=request.user
-            ).values_list('email', flat=True))
-            
-            if not business_emails:
-                return Response({
-                    "status": 400,
-                    "message": "Business not found or you don't have permission",
-                })
-            
+            ).values_list('email', flat=True)
+        )
+
+        if not business_emails:
+            return Response({
+                "status": 403,
+                "message": "Not allowed or business not found"
+            })
+
+        # support optional period filtering: 'week' to limit to last 7 days
+        period = request.query_params.get('period') or request.data.get('period')
+        if period == 'week':
+            week_ago = date() - timedelta(days=7)
             total_scans = QRCodeScan.objects.filter(
-                qr_code__location__business__owner=request.user,
-                qr_code__location__business__id=business_id
-            ).count()
-        
-            feedback_count = Feedback.objects.filter(
-                qr_code__location__business__owner=request.user,
-                qr_code__location__business__id=business_id
-            ).count()
-
-            positive_feedback = Feedback.objects.filter(
-                qr_code__location__business__owner=request.user,
                 qr_code__location__business__id=business_id,
-                rating="great"
+                scanned_at__gte=week_ago
             ).count()
 
-            positive_feedback_percentage = 0
-            if feedback_count > 0:
-                positive_feedback_percentage = (positive_feedback / feedback_count) * 100
-                positive_feedback_percentage = round(positive_feedback_percentage, 2)
+            feedback_qs = Feedback.objects.filter(
+                qr_code__location__business__id=business_id,
+                created_at__gte=week_ago
+            )
+            week_range = f"{week_ago.date()} - {date().date()}"
+        else:
+            total_scans = QRCodeScan.objects.filter(
+                qr_code__location__business__id=business_id
+            ).count()
 
-            report_text = {
-                "total_scans": total_scans,
-                "feedback_count": feedback_count,
-                "positive_feedback": positive_feedback,
-                "positive_feedback_percentage": positive_feedback_percentage
-            }
-            
-            send_summary_via_email(business_emails, report_text)
-            return Response({
-                "status": 200,
-                "message": "email sent successfully",
-            })
-        
-        except Exception as e:
-            print(e)
-            return Response({
-                "status": 500,
-                "message": "Internal server error",
-                "data": str(e)
-            })
-            
-     
+            feedback_qs = Feedback.objects.filter(
+                qr_code__location__business__id=business_id
+            )
+            week_range = date().strftime("%Y-%m-%d")
+
+        feedback_count = feedback_qs.count()
+        positive_feedback = feedback_qs.filter(rating="great").count()
+
+        positive_feedback_percentage = 0
+        if feedback_count:
+            positive_feedback_percentage = round(
+                (positive_feedback / feedback_count) * 100, 2
+            )
+
+        report_text = {
+            "total_scans": total_scans,
+            "feedback_count": feedback_count,
+            "positive_feedback": positive_feedback,
+            "positive_feedback_percentage": positive_feedback_percentage
+        }
+
+        send_summary_via_email(
+            business_emails,
+            report_text,
+            business_id=str(business_id),
+            week_range=week_range
+        )
+
+        return Response({
+            "status": 200,
+            "message": "Summary email sent successfully"
+        })

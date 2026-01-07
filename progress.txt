@@ -6,7 +6,7 @@ testing for authentication is done it works
 dashbaord get request testing donee along with fake data
 filtering in dashabord is done
 summary report of the dashbaord is also done
-
+manual sending of summary email works (trying to add date in the pdf- done)
 automatic emailing of pdf report - in progress
 
 
@@ -23,8 +23,8 @@ venv\Scripts\python.exe -m pip install -r requirements.txt
 ?name=something
 
 {
-    "access": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY3MTg5NzQwLCJpYXQiOjE3NjcxMDMzNDAsImp0aSI6IjcwMTYyZGQzODcxMzRhZDE5YjkxOGE5ZTFhYjc3Y2Q2IiwidXNlcl9pZCI6IjkifQ.x32HE3uiBMNnZZfWBRphsLwtGbSgwpDlaWE7iZafKAA",
-    "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc2NzE4OTc0MCwiaWF0IjoxNzY3MTAzMzQwLCJqdGkiOiJlMzkwN2VkYjVhNWU0NTM1OTI5M2JlMzZkMjE5MGE0NSIsInVzZXJfaWQiOiI5In0.CGUsQp0VbaHJdbHYp_x-spaC3C6LzKiUbkmhyKMxuFw"
+    "access": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY3ODcwNzI1LCJpYXQiOjE3Njc3ODQzMjUsImp0aSI6IjA3ZDg5ZjI0Y2Q4YjQwMjVhMTNmMjBkMWU1NTIyMTNjIiwidXNlcl9pZCI6IjkifQ.VqWeIViTqMc3agyfGt2L5S8YyA7x15JYP0ylLUhRd3M",
+    "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc2Nzg3MDcyNSwiaWF0IjoxNzY3Nzg0MzI1LCJqdGkiOiI5NjllMzg2ZjA4MmU0MjcyYTlmMDEwYTI5YjM2MDhjYiIsInVzZXJfaWQiOiI5In0.yeC5GllHF2WPX3TYkWmU57ElAOUHaVZqcPrc-WdT6BA"
 }
 
 class TotalScansAPI(APIView):
