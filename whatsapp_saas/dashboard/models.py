@@ -45,9 +45,9 @@ class QRCodeScan(models.Model):
         related_name="scans"
     )
 
-    scanned_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
-        return f"Scan of {self.qr_code.slug} at {self.scanned_at}"
+        return f"Scan of {self.qr_code.slug} at {self.created_at}"
 
 class Feedback(models.Model):
     RATING_CHOICES = [

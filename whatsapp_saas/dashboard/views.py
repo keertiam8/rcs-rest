@@ -8,7 +8,6 @@ from rest_framework.permissions import IsAuthenticated,AllowAny
 from django_filters.rest_framework import DjangoFilterBackend
 from .emails import *
 from django.utils.timezone import now as date
-from datetime import timedelta
 
 
 
@@ -132,29 +131,13 @@ class SendSummary(APIView):
                 "message": "Not allowed or business not found"
             })
 
-        # support optional period filtering: 'week' to limit to last 7 days
-        period = request.query_params.get('period') or request.data.get('period')
-        if period == 'week':
-            week_ago = date() - timedelta(days=7)
-            total_scans = QRCodeScan.objects.filter(
-                qr_code__location__business__id=business_id,
-                scanned_at__gte=week_ago
-            ).count()
+        total_scans = QRCodeScan.objects.filter(
+            qr_code__location__business__id=business_id
+        ).count()
 
-            feedback_qs = Feedback.objects.filter(
-                qr_code__location__business__id=business_id,
-                created_at__gte=week_ago
-            )
-            week_range = f"{week_ago.date()} - {date().date()}"
-        else:
-            total_scans = QRCodeScan.objects.filter(
-                qr_code__location__business__id=business_id
-            ).count()
-
-            feedback_qs = Feedback.objects.filter(
-                qr_code__location__business__id=business_id
-            )
-            week_range = date().strftime("%Y-%m-%d")
+        feedback_qs = Feedback.objects.filter(
+            qr_code__location__business__id=business_id
+        )
 
         feedback_count = feedback_qs.count()
         positive_feedback = feedback_qs.filter(rating="great").count()
@@ -176,7 +159,7 @@ class SendSummary(APIView):
             business_emails,
             report_text,
             business_id=str(business_id),
-            week_range=week_range
+            week_range=date().strftime("%Y-%m-%d")
         )
 
         return Response({
