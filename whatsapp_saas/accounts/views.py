@@ -11,7 +11,6 @@ from .models import User
 
 
 
-# Create your views here.
 class RegisterAPI(APIView):
     permission_classes = [AllowAny]
     
@@ -23,7 +22,7 @@ class RegisterAPI(APIView):
                 return Response({
                     "status": 400,
                     "message": "Something went wrong",
-                    "data": serializer.errors
+                  
                 })
 
             user = serializer.save()
@@ -33,9 +32,7 @@ class RegisterAPI(APIView):
             return Response({
                 "status": 200,
                 "message": "User registered successfully",
-                "data": {
-                    "email": user.email
-                }
+              
             })
 
         except Exception as e:
@@ -43,7 +40,7 @@ class RegisterAPI(APIView):
             return Response({
                 "status": 500,
                 "message": "Internal server error",
-                "data": str(e)
+                
             })
 
         
@@ -59,7 +56,6 @@ class LoginVerification(APIView):
                 return Response({
                     "status": 400,
                     "message": "Invalid data",
-                    "data": serializer.errors
                 })
 
             email = serializer.validated_data['email']
@@ -70,14 +66,12 @@ class LoginVerification(APIView):
                 return Response({
                     "status": 400,
                     "message": "Invalid email",
-                    "data": {}
                 })
 
             if not user.check_password(password):
                 return Response({
                     "status": 400,
                     "message": "Invalid password",
-                    "data": {}
                 })
 
             # Send OTP to user
@@ -85,104 +79,54 @@ class LoginVerification(APIView):
 
             return Response({
                 "status": 200,
-                "message": "OTP sent successfully",
-                "data": {
-                    "email": user.email
-                }
+                "message": "OTP sent successfully"
             })
         except Exception as e:
             print("LOGIN ERROR:", e)
             return Response({
                 "status": 500,
                 "message": "Internal server error",
-                "data": str(e)
             })
+        
+
 
 class OTPVerificationAPI(APIView):
     permission_classes = [AllowAny]
-    
-    def post(self, request):
-        try:
-            serializer = VerifyOTPSerializer(data=request.data)
-            if not serializer.is_valid():
-                return Response({
-                    "status": 400,
-                    "message": "Invalid data",
-                    "data": serializer.errors
-                })
-
-            email = serializer.validated_data['email']
-            otp = serializer.validated_data['otp']
-
-            OTP_EXPIRY_TIME = timedelta(minutes=5)
-            user = User.objects.filter(email=email).first()
-
-            if not user:
-                return Response({
-                    "status": 400,
-                    "message": "Invalid email",
-                    "data": {}
-                })
-
-            if user.otp != otp:
-                return Response({
-                    "status": 400,
-                    "message": "Invalid OTP",
-                    "data": {}
-                })
-
-            if timezone.now() > user.otp_created_at + OTP_EXPIRY_TIME:
-                return Response({
-                    "status": 400,
-                    "message": "OTP expired",
-                    "data": {}
-                })
-
-            # Mark user as verified (OTP will be cleared when JWT is issued)
-            user.is_verified = True
-            user.save()
-            user_serializer = UserSerializer(user)
-            return Response({
-                "status": 200,
-                "message": "Login successful",
-                "data": user_serializer.data
-            })
-        except Exception as e:
-            print("LOGIN ERROR:", e)
-            return Response({
-                "status": 500,
-                "message": "Internal server error",
-                "data": str(e)
-            })
-
-
-        
-class CustomTokenObtainPairView(APIView):
-    permission_classes = [AllowAny]
 
     def post(self, request):
-        email = request.data.get("email")
-        otp = request.data.get("otp")
+        serializer = VerifyOTPSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(
+                {"message": "Invalid data"},
+                status=400
+            )
+
+        email = serializer.validated_data["email"]
+        otp = serializer.validated_data["otp"]
+
+        OTP_EXPIRY_TIME = timedelta(minutes=5)
 
         user = User.objects.filter(email=email).first()
-
         if not user:
             return Response({"message": "User not found"}, status=400)
 
         if user.otp != otp:
             return Response({"message": "Invalid OTP"}, status=400)
 
-        # OTP is valid → issue JWT
-        refresh = RefreshToken.for_user(user)
+        if timezone.now() > user.otp_created_at + OTP_EXPIRY_TIME:
+            return Response({"message": "OTP expired"}, status=400)
 
-        # clear OTP
+        user.is_verified = True
         user.otp = None
         user.save()
 
+        refresh = RefreshToken.for_user(user)
+
         return Response({
+            "message": "Login successful",
             "access": str(refresh.access_token),
             "refresh": str(refresh),
-        })             
+        }, status=200)
 
 
 class ResendOTPAPI(APIView):
@@ -196,7 +140,7 @@ class ResendOTPAPI(APIView):
                 return Response({
                     "status": 400,
                     "message": "Email is required",
-                    "data": {}
+                    
                 })
             
             user = User.objects.filter(email=email).first()
@@ -205,18 +149,14 @@ class ResendOTPAPI(APIView):
                 return Response({
                     "status": 400,
                     "message": "User not found",
-                    "data": {}
+                   
                 })
             
-            # Send new OTP
             send_otp_via_email(user.email)
             
             return Response({
                 "status": 200,
                 "message": "OTP sent successfully",
-                "data": {
-                    "email": user.email
-                }
             })
             
         except Exception as e:
@@ -224,6 +164,6 @@ class ResendOTPAPI(APIView):
             return Response({
                 "status": 500,
                 "message": "Internal server error",
-                "data": str(e)
+               
             })
                         
