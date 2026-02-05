@@ -24,8 +24,6 @@ class FeedbackAPI(APIView):
             serializer = FeedbackSerializer(feedbacks, many=True)
 
             return Response({
-                "status": 200,
-                "message": "Dashboard Home",
                 "data": serializer.data
             })
 
@@ -34,7 +32,6 @@ class FeedbackAPI(APIView):
             return Response({
                 "status": 500,
                 "message": "Internal server error",
-                "data": str(e)
             })
         
 
@@ -110,7 +107,6 @@ class SummaryAPI(APIView):
             return Response({
                 "status": 500,
                 "message": "Internal server error",
-                "data": str(e)
             })
 
 

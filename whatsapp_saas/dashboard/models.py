@@ -9,6 +9,7 @@ class Business(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="businesses")
     email = models.EmailField()
     name = models.CharField(max_length=255)
+    phone_number_id = models.CharField(max_length=255, null=True, blank=True) # WhatsApp Business phone number ID
     google_review_url = models.URLField(null=True, blank=True)
     subscription_plan = models.CharField(max_length=50)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -29,7 +30,7 @@ class Location(models.Model):
 class QRCode(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     location = models.ForeignKey(Location, on_delete=models.CASCADE, related_name="qr_codes")
-    slug = models.SlugField(unique=True)
+    slug = models.SlugField(unique=True) #could remove only tells which part of the cafe the qr code is from ex - table, billing counter
     message = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -58,7 +59,7 @@ class Feedback(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     qr_code = models.ForeignKey(QRCode, on_delete=models.CASCADE, related_name="feedbacks")
-    phone_number = models.CharField(max_length=20)
+    customer_phone_number = models.CharField(max_length=20)
     rating = models.CharField(max_length=20, choices=RATING_CHOICES)
     comment = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

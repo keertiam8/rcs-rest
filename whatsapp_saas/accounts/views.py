@@ -43,8 +43,6 @@ class RegisterAPI(APIView):
                 
             })
 
-        
-
 
 class LoginVerification(APIView):
     permission_classes = [AllowAny]
@@ -123,6 +121,7 @@ class OTPVerificationAPI(APIView):
         refresh = RefreshToken.for_user(user)
 
         return Response({
+            "status": 200,
             "message": "Login successful",
             "access": str(refresh.access_token),
             "refresh": str(refresh),
