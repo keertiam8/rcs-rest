@@ -6,4 +6,5 @@ urlpatterns = [
     path('filtered-feedback/', views.FilteredFeedbackAPI.as_view(), name='filtered_feedback'),
     path('feedback-summary/<uuid:business_id>/', views.SummaryAPI.as_view(), name='summary_feedback'),
     path('summary-email/<uuid:business_id>/', views.SendSummary.as_view(), name='send_summary_email'),
+    path('ai-analysis/<uuid:business_id>/', views.AIAnalysisAPI.as_view(), name='ai_analysis'),
 ]

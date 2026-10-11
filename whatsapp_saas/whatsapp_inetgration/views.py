@@ -1,12 +1,23 @@
 from django.shortcuts import render
+from django.http import HttpResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework import status
 from dashboard.models import QRCode, Feedback, Business
+import os
 
 class WhatsAppWebhookView(APIView):
     permission_classes = [AllowAny]
+
+    def get(self, request):
+        verify_token = os.getenv('WHATSAPP_VERIFY_TOKEN')
+        token = request.GET.get('hub.verify_token')
+        challenge = request.GET.get('hub.challenge')
+
+        if token == verify_token:
+            return HttpResponse(challenge)
+        return HttpResponse('Unauthorized', status=403)
 
     def post(self, request):
 

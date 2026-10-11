@@ -36,4 +36,6 @@ task_log.txt
 
 progress.txt
 
+*.postman_collection.json
+
 *.pdf
